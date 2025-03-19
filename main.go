@@ -21,8 +21,12 @@ func submitBooking(w http.ResponseWriter, r *http.Request) {
 
 	name := r.FormValue("name")
 	email := r.FormValue("email")
-	tickets := r.FormValue("tickets")
-	fmt.Printf("name: %s, email: %s, tickets %s", name, email, tickets)
+	checkin := r.FormValue("checkin")
+	checkout := r.FormValue("checkout")
+	guests := r.FormValue("guests")
+	roomType := r.FormValue("roomType")
+	requests := r.FormValue("requests")
+	fmt.Printf("name: %s, email: %s, checkin %s, checkout: %s, guests: %s, roomType: %s, requests: %s", name, email, checkin, checkout, guests, roomType, requests)
 	fmt.Fprintf(w, "Thank you, %s! Your booking has been received.", name)
 }
 
