@@ -1,11 +1,17 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 )
+
+var db *sql.DB
 
 func bookPage(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/index.html")
@@ -21,16 +27,49 @@ func submitBooking(w http.ResponseWriter, r *http.Request) {
 
 	name := r.FormValue("name")
 	email := r.FormValue("email")
-	checkin := r.FormValue("checkin")
-	checkout := r.FormValue("checkout")
+	checkInStr := r.FormValue("check_in")
+	checkOutStr := r.FormValue("check_out")
 	guests := r.FormValue("guests")
-	roomType := r.FormValue("roomType")
-	requests := r.FormValue("requests")
-	fmt.Printf("name: %s, email: %s, checkin %s, checkout: %s, guests: %s, roomType: %s, requests: %s", name, email, checkin, checkout, guests, roomType, requests)
+
+	// Convert the date strings to time.Time
+	checkIn, err := time.Parse("2006-01-02", checkInStr) // Date format must match the input
+	if err != nil {
+		log.Printf("Invalid check-in date format: %v\n", err)
+		http.Error(w, "Invalid check-in date", http.StatusBadRequest)
+		return
+	}
+
+	checkOut, err := time.Parse("2006-01-02", checkOutStr)
+	if err != nil {
+		log.Printf("Invalid check-out date format: %v\n", err)
+		http.Error(w, "Invalid check-out date", http.StatusBadRequest)
+		return
+	}
+
+	// Convert guests to integer
+	guestsInt, err := strconv.Atoi(guests)
+	if err != nil {
+		log.Printf("Invalid number of guests: %v\n", err)
+		http.Error(w, "Invalid number of guests", http.StatusBadRequest)
+		return
+	}
+
+	_, err = db.Exec("INSERT INTO bookings (name, email, check_in, check_out, guests) VALUES ($1, $2, $3, $4, $5)",
+		name, email, checkIn, checkOut, guestsInt)
+
+	if err != nil {
+		log.Printf("❌ Database error: %v\n", err)
+		http.Error(w, "Error saving booking", http.StatusInternalServerError)
+		return
+	}
+
 	fmt.Fprintf(w, "Thank you, %s! Your booking has been received.", name)
 }
 
 func main() {
+	db = connectDB()
+	defer db.Close()
+
 	http.HandleFunc("/book", bookPage)
 	http.HandleFunc("/submit", submitBooking)
 	fmt.Println("Server running on http://localhost:8080")
