@@ -23,6 +23,7 @@ func main() {
 	defer dbConnection.Close()
 
 	customer := customers.NewCustomers(dbConnection)
+	http.HandleFunc("/api/customers", customer.HandleGetCustomers)
 	http.HandleFunc("/customerform", customer.ShowCustomerForm)
 	http.HandleFunc("/submitcustomer", customer.SubmitCustomerForm)
 	fmt.Println("Server running on http://localhost:8080")

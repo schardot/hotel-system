@@ -2,7 +2,9 @@ package customers
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"hotel-system-1/internal/entities"
 	"html/template"
 	"log"
 	"net/http"
@@ -10,14 +12,73 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Customers struct {
+type CustomersService struct {
 	dbConnection *sql.DB
 }
 
-func NewCustomers(dbConnection *sql.DB) Customers {
-	return Customers{dbConnection: dbConnection}
+func (c *CustomersService) GetAllCustomers() ([]entities.Customer, error) {
+	rows, err := c.dbConnection.Query("SELECT * FROM customers")
+	if err != nil {
+		log.Println("Error querying customers:", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var customers []entities.Customer
+
+	for rows.Next() {
+		var customer entities.Customer
+		if err := rows.Scan(
+			&customer.ID,
+			&customer.FirstName,
+			&customer.LastName,
+			&customer.Email,
+			&customer.TelNum,
+			&customer.CelNum,
+			&customer.IdType,
+			&customer.IdNum,
+			&customer.Address,
+			&customer.ZipCode,
+			&customer.City,
+			&customer.State,
+			&customer.Country,
+			&customer.CreatedAt,
+		); err != nil {
+			log.Println("Error scanning row:", err)
+			return nil, err
+		}
+		customers = append(customers, customer)
+	}
+	return customers, nil
 }
-func (c *Customers) ShowCustomerForm(w http.ResponseWriter, r *http.Request) {
+
+func (c *CustomersService) HandleGetCustomers(w http.ResponseWriter, r *http.Request) {
+	customers, err := c.GetAllCustomers()
+	if err != nil {
+		http.Error(w, "Error retrieving customers", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(customers); err != nil {
+		http.Error(w, "Error encoding customers to JSON", http.StatusInternalServerError)
+	}
+}
+
+func NewCustomers(dbConnection *sql.DB) CustomersService {
+	return CustomersService{dbConnection: dbConnection}
+}
+
+func (c *CustomersService) ListCustomers(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("templates/customers.html")
+	if err != nil {
+		http.Error(w, "Error loading page", http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, nil)
+}
+
+func (c *CustomersService) ShowCustomerForm(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/customerform.html")
 	if err != nil {
 		http.Error(w, "Error loading page", http.StatusInternalServerError)
@@ -26,7 +87,7 @@ func (c *Customers) ShowCustomerForm(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-func (c *Customers) SubmitCustomerForm(w http.ResponseWriter, r *http.Request) {
+func (c *CustomersService) SubmitCustomerForm(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	firstName := r.FormValue("first_name")
