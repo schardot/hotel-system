@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers</title>
+</head>
+
+<body>
+    <h1>Customer List</h1>
+    <ul id="customer-list"></ul>
+
+    <script>
+        // Fetch customer data from the API
+        fetch('/api/customers')
+            .then(response => response.json())
+            .then(data => {
+                const customerList = document.getElementById('customer-list');
+                data.forEach(customer => {
+                    const li = document.createElement('li');
+                    li.textContent = `${customer.first_name} ${customer.last_name} - ${customer.email}`;
+                    li.addEventListener('click', () => {
+                        // Handle click (e.g., populate the reservation form)
+                        console.log(customer);
+                    });
+                    customerList.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching customers:', error);
+            });
+    </script>
+</body>
+
+</html>
