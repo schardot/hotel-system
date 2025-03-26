@@ -4,33 +4,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customers</title>
+    <title>Customer List</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
 </head>
 
 <body>
-    <h1>Customer List</h1>
-    <ul id="customer-list"></ul>
+    <div class="container mt-5">
+        <h1 class="text-center">Customer List</h1>
 
+        <!-- Search & Create Button -->
+        <div class="d-flex justify-content-between mb-4">
+            <input type="text" id="search" class="form-control w-50" placeholder="Search by ID, Name, or Email"
+                oninput="updateTable()">
+
+            <a href="/customerform" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle"></i> Create New Customer
+            </a>
+        </div>
+
+        <!-- Customer Table -->
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Customer Id</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="customerTable">
+                {{range .}}
+                <tr>
+                    <td>{{.CustomerID}}</td>
+                    <td>{{.FirstName}}</td>
+                    <td>{{.LastName}}</td>
+                    <td>{{.Email}}</td>
+                    <td>{{.TelNum}}</td>
+                    <td><a href="/editcustomer?customer_id={{.CustomerID}}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a></td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="6" class="text-center">No customers found.</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript for Search -->
     <script>
-        // Fetch customer data from the API
-        fetch('/api/customers')
-            .then(response => response.json())
-            .then(data => {
-                const customerList = document.getElementById('customer-list');
-                data.forEach(customer => {
-                    const li = document.createElement('li');
-                    li.textContent = `${customer.first_name} ${customer.last_name} - ${customer.email}`;
-                    li.addEventListener('click', () => {
-                        // Handle click (e.g., populate the reservation form)
-                        console.log(customer);
-                    });
-                    customerList.appendChild(li);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching customers:', error);
-            });
-    </script>
-</body>
+        let debounceTimeout;
 
+        function updateTable() {
+            const search = document.getElementById('search').value;
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                const url = `/api/customers?search=${encodeURIComponent(search)}`;
+                window.location.href = url;
+            }, 500);
+        }
+    </script>
+
+</body>
 </html>
