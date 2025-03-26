@@ -26,6 +26,7 @@ func main() {
 	http.HandleFunc("/api/customers", customer.HandleGetCustomers)
 	http.HandleFunc("/customerform", customer.ShowCustomerForm)
 	http.HandleFunc("/submitcustomer", customer.SubmitCustomerForm)
+	http.HandleFunc("/editcustomer", customer.EditCustomerForm)
 	fmt.Println("Server running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
