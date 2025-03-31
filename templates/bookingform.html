@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Booking</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">New Booking</h2>
+
+        <form action="/submitbooking" method="POST">
+            <!-- Customer Selection -->
+            <div class="form-group">
+                <label for="customer_id">Select Customer</label>
+                <select id="customer_id" name="customer_id" class="form-control" required>
+                    <option value="">-- Select a Customer --</option>
+                    {{range .Customers}}
+                    <option value="{{.CustomerID}}">{{.FirstName}} {{.LastName}} ({{.Email}})</option>
+                    {{end}}
+                </select>
+                <small class="form-text text-muted">
+                    Not in the list? <a href="/customerform">Create a new customer</a>.
+                </small>
+            </div>
+
+            <!-- Check-in Date -->
+            <div class="form-group">
+                <label for="check_in">Check-in Date</label>
+                <input type="date" id="check_in" name="check_in" class="form-control" required>
+            </div>
+
+            <!-- Check-out Date -->
+            <div class="form-group">
+                <label for="check_out">Check-out Date</label>
+                <input type="date" id="check_out" name="check_out" class="form-control" required>
+            </div>
+
+            <!-- Room Type -->
+            <div class="form-group">
+                <label for="room_type">Room Type</label>
+                <select id="room_type" name="room_type" class="form-control" required>
+                    <option value="single">Single</option>
+                    <option value="double">Double</option>
+                    <option value="suite">Suite</option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-block">Create Booking</button>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("#check_in, #check_out").on("change", function () {
+                const checkInDate = new Date($("#check_in").val());
+                const checkOutDate = new Date($("#check_out").val());
+
+                if (checkInDate && checkOutDate && checkInDate >= checkOutDate) {
+                    alert("Check-out date must be after check-in date.");
+                    $("#check_out").val("");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
