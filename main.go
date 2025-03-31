@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"hotel-system-1/internal/bookings"
 	"hotel-system-1/internal/config"
 	"hotel-system-1/internal/customers"
 	"hotel-system-1/internal/db"
@@ -23,6 +24,9 @@ func main() {
 	defer dbConnection.Close()
 
 	customer := customers.NewCustomers(dbConnection)
+	bookings := bookings.NewBookings(dbConnection)
+	http.HandleFunc("/bookings", bookings.HandleBookingsPage)
+	http.HandleFunc("/newbooking", bookings.HandleNewBookingForm)
 	http.HandleFunc("/api/customers", customer.HandleGetCustomers)
 	http.HandleFunc("/customerform", customer.ShowCustomerForm)
 	http.HandleFunc("/submitcustomer", customer.SubmitCustomerForm)
